@@ -1,3 +1,17 @@
 <resources>
     <string name="app_name">SmartDispenser</string>
+
+    <!--BottomBar的tab名称-->
+    <string name="home">Home</string>
+    <string name="box">Box</string>
+    <string name="remind">Remind</string>
+    <string name="setting">Setting</string>
+
+    <!--Fragment的名称-->
+    <string name="home_fragment">HomeFragment</string>
+    <string name="box_fragment">BoxFragment</string>
+    <string name="remind_fragment">RemindFragment</string>
+    <string name="setting_fragment">SettingFragment</string>
+
+
 </resources>

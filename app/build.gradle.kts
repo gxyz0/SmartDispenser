@@ -40,4 +40,7 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+
+    // 引入Awesome-Android-UI
+    implementation("nl.joery.animatedbottombar:library:1.1.0")
 }

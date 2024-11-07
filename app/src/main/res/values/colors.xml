@@ -2,4 +2,8 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!--主题色-->
+    <color name="theme">#FF87CE4A</color>
+    <color name="theme_dark">#FF79AD6E</color>
 </resources>
