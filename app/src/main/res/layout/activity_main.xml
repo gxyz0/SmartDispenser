@@ -6,52 +6,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_gravity="center"
-    tools:context=".MainActivity">
+    tools:context=".activity.MainActivity">
 
-    <FrameLayout
+    <include
         android:id="@+id/title_bar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent">
+        layout="@layout/title_bar" />
 
-        <TextView
-            android:id="@+id/title_text"
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:background="@color/theme"
-            android:gravity="center"
-            android:text="@string/home"
-            android:textColor="@color/white"
-            android:textSize="36dp"
-            android:textStyle="bold" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/title_button"
-            android:layout_width="wrap_content"
-            android:layout_height="60dp"
-            android:backgroundTint="@color/theme"
-            android:drawableLeft="@drawable/menu"
-            app:cornerRadius="10dp" />
-    </FrameLayout>
-
-    <nl.joery.animatedbottombar.AnimatedBottomBar
+    <include
         android:id="@+id/bottom_bar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/white"
-        app:abb_iconSize="36dp"
-        app:abb_indicatorAppearance="round"
-        app:abb_indicatorColor="@color/theme_dark"
-        app:abb_indicatorHeight="6dp"
-        app:abb_indicatorMargin="16dp"
-        app:abb_rippleEnabled="true"
-        app:abb_selectedIndex="0"
-        app:abb_selectedTabType="text"
-        app:abb_tabColorSelected="@color/theme_dark"
-        app:abb_tabs="@menu/tabs"
-        app:abb_textSize="24dp"
-        app:abb_textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        layout="@layout/bottom_bar" />
 
     <androidx.drawerlayout.widget.DrawerLayout
         android:id="@+id/drawer_layout"
@@ -60,17 +23,14 @@
         app:layout_constraintBottom_toTopOf="@id/bottom_bar"
         app:layout_constraintTop_toBottomOf="@id/title_bar">
         <!--主视图-->
-        <FrameLayout
-            android:id="@+id/frame_layout"
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/main_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
         <!--抽屉视图-->
-        <ListView
-            android:id="@+id/drawer_menu"
-            android:layout_width="240dp"
-            android:layout_height="match_parent"
-            android:layout_gravity="start"
-            android:background="@color/theme" />
+        <include
+            android:id="@+id/drawer_view"
+            layout="@layout/drawer_view" />
     </androidx.drawerlayout.widget.DrawerLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

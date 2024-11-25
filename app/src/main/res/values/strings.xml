@@ -13,5 +13,13 @@
     <string name="remind_fragment">RemindFragment</string>
     <string name="setting_fragment">SettingFragment</string>
 
+    <!--boxCard，remindCard按钮名称-->
+    <string name="delete">delete</string>
+    <string name="edit">edit</string>
+    <string name="add">add</string>
+    <!--boxActivity，remindActivity按钮名称-->
+    <string name="confirm">confirm</string>
+    <string name="back">Back</string>
+    <string name="exit">exit</string>
 
 </resources>

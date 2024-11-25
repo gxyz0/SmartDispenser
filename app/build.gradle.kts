@@ -41,6 +41,12 @@ dependencies {
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 
-    // 引入Awesome-Android-UI
+    // 引入animated-bottom-bar
     implementation("nl.joery.animatedbottombar:library:1.1.0")
+    // 引入circular-progress-button
+    implementation("com.github.dmytrodanylyk:circular-progress-button:1.4")
+    // 引入room
+    var room_version = "2.2.5"
+    implementation("androidx.room:room-runtime:$room_version")
+    annotationProcessor("androidx.room:room-compiler:$room_version")
 }
