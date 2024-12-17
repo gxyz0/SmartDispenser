@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -13,23 +14,28 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.smartdispenser.R;
+import com.example.smartdispenser.activity.MainActivity;
 import com.example.smartdispenser.activity.RemindCardActivity;
-import com.example.smartdispenser.room.DatabaseManager;
-import com.example.smartdispenser.room.reminder.Reminder;
+import com.example.smartdispenser.database.DatabaseManager;
+import com.example.smartdispenser.database.Reminder;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.materialswitch.MaterialSwitch;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class RemindCardAdapter extends RecyclerView.Adapter<RemindCardAdapter.RemindCardViewHolder> {
     // 定义全局变量
     private Context context;
+    private DatabaseManager databaseManager;
     private List<Reminder> reminderList;
     private int userId = 1;
 
     public RemindCardAdapter(List<Reminder> reminderList, Context context) {
-        this.reminderList = reminderList;
         this.context = context;
+        this.databaseManager = DatabaseManager.getInstance(context);
+        this.reminderList = reminderList;
     }
 
     @NonNull
@@ -45,14 +51,18 @@ public class RemindCardAdapter extends RecyclerView.Adapter<RemindCardAdapter.Re
         String startDate = reminderList.get(position).getReminderStartDate();
         String endDate = reminderList.get(position).getReminderEndDate();
         String time = reminderList.get(position).getReminderTime();
+        boolean isReminderActive = reminderList.get(position).getReminderActive();
         holder.remindName.setText(reminderList.get(position).getReminderName());
         holder.remindTime.setText(startDate + " ~ " + endDate + "  " + time);
+        holder.remindSwitch.setChecked(isReminderActive);
         // 设置标识
         holder.remindDeleteButton.setTag(position);
         holder.remindCheckButton.setTag(position);
+        holder.remindSwitch.setTag(position);
         // 设置监听事件
         holder.remindDeleteButton.setOnClickListener(remindDeleteButtonListener);
         holder.remindCheckButton.setOnClickListener(remindCheckButtonListener);
+        holder.remindSwitch.setOnCheckedChangeListener(remindSwitchListener);
     }
 
     @Override
@@ -94,24 +104,45 @@ public class RemindCardAdapter extends RecyclerView.Adapter<RemindCardAdapter.Re
         }
     };
 
+    // 设置Switch按钮逻辑
+    private CompoundButton.OnCheckedChangeListener remindSwitchListener = new CompoundButton.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(CompoundButton view, boolean isChecked) {
+            Reminder reminder = reminderList.get((int) view.getTag());
+            reminder.setReminderActive(isChecked);
+            // 打开数据库
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    databaseManager.startConnection();
+                    databaseManager.updateReminder(reminder);
+                }
+            }).start();
+        }
+    };
+
     // 删除对应的remindCard
     private void deleteCard(Object tag) {
         int position = (int) tag;
         // 从reminderList中移除当前item
         Reminder deleteReminder = reminderList.get(position);
         reminderList.remove(position);
-        // 数据库删除数据
-        DatabaseManager databaseManager = new DatabaseManager(context);
-        databaseManager.deleteReminders(deleteReminder);
-        // 更新剩余item的reminderId
-        for (int i = position; i < reminderList.size(); i++) {
-            Reminder reminder = reminderList.get(i);
-            reminder.setReminderId(reminder.getReminderId() - 1);
-            // 更新数据库
-            databaseManager.updateReminders(reminder);
-        }
-        // 关闭数据库
-        databaseManager.shutdown();
+        // 打开数据库
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                databaseManager.startConnection();
+                databaseManager.deleteReminder(deleteReminder);
+                System.out.println("Reminder删除成功！");
+                // 更新剩余reminder的reminderId
+                for (int i = position; i < reminderList.size(); i++) {
+                    Reminder reminder = reminderList.get(i);
+                    reminder.setReminderId(reminder.getReminderId() - 1);
+                    // 更新数据库
+                    databaseManager.updateReminder(reminder);
+                }
+            }
+        }).start();
         // 在RecyclerView中移除对应item
         notifyItemRemoved(position);
         // 更新RecyclerView的显示
@@ -122,7 +153,7 @@ public class RemindCardAdapter extends RecyclerView.Adapter<RemindCardAdapter.Re
     private void toRemindCardActivity(Object tag) {
         int reminderId = ((int) tag) + 1;
         Intent intent = new Intent(context, RemindCardActivity.class);
-        intent.putExtra("UserId", userId);
+//        intent.putExtra("UserId", userId);
         intent.putExtra("ReminderId", reminderId);
         context.startActivity(intent);
     }

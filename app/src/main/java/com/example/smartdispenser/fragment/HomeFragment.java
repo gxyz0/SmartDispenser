@@ -1,5 +1,10 @@
 package com.example.smartdispenser.fragment;
 
+import static android.content.Context.MODE_PRIVATE;
+
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -11,11 +16,21 @@ import android.widget.TextView;
 import androidx.fragment.app.Fragment;
 
 import com.example.smartdispenser.R;
+import com.example.smartdispenser.activity.MainActivity;
+import com.example.smartdispenser.adapter.BoxCardAdapter;
+import com.example.smartdispenser.database.DatabaseManager;
+import com.example.smartdispenser.database.Reminder;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -45,26 +60,9 @@ public class HomeFragment extends Fragment {
         return view;
     }
 
-    TextView timeText;
-    TextView dateText;
-
-    @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-
-        timeText = view.findViewById(R.id.time_text);
-        dateText = view.findViewById(R.id.date_text);
-        handler.post(updateTimeRunnable); // 启动时间更新
-    }
-
     @Override
     public void onStart() {
         super.onStart();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
     }
 
     @Override
@@ -78,11 +76,52 @@ public class HomeFragment extends Fragment {
     }
 
     @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        // 获取Context
+        context = requireContext();
+        databaseManager = DatabaseManager.getInstance(context);
+
+        // 获取userId
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("userId", MODE_PRIVATE);
+        userId = sharedPreferences.getInt("userId",1);
+
+        // 定义ClockText
+        timeText = view.findViewById(R.id.time_text);
+        dateText = view.findViewById(R.id.date_text);
+        handler.post(updateTimeRunnable); // 启动时间更新
+
+        // 定义HomeText
+        homeText = view.findViewById(R.id.home_text);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // 获取Reminder数据库内容
+        getReminderList();
+    }
+
+    @Override
     public void onDestroyView() {
         super.onDestroyView();
         handler.removeCallbacks(updateTimeRunnable); // 停止时间更新
     }
 
+    // 定义userId
+    int userId = 1;
+    // 定义Context
+    private Context context;
+    // 定义databaseManger
+    private DatabaseManager databaseManager;
+    // 定义ClockText
+    private TextView timeText;
+    private TextView dateText;
+    // 定义HomeText
+    private TextView homeText;
+    // 定义reminderList
+    List<Reminder> reminderList;
     // 设置定时器
     private Handler handler = new Handler(Looper.getMainLooper());
     private Runnable updateTimeRunnable = new Runnable() {
@@ -105,4 +144,98 @@ public class HomeFragment extends Fragment {
         dateText.setText(currentDate);
     }
 
+    // 获取Reminder数据库内容
+    private void getReminderList() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                databaseManager.startConnection();
+                reminderList = databaseManager.getReminder(userId);
+                System.out.println("HomeFragment: Reminder获取完成！");
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // 更新最新的reminder
+                        homeText.setText("Latest Reminder\nwithin 30 days:\n"+getEarliestDateTime());
+                    }
+                });
+            }
+        }).start();
+    }
+
+    // 获取最早的DateTime
+    private String getEarliestDateTime() {
+        // 获取现在时间
+        SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm", Locale.getDefault());
+        sdfTime.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai")); // 设置时区
+        sdfDate.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai")); // 设置时区
+        String currentDateStr = sdfDate.format(new Date());
+        String currentTimeStr = sdfTime.format(new Date());
+        Date currentDate = null;
+        Date currentTime = null;
+        try {
+            currentDate = sdfDate.parse(currentDateStr);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            currentTime = sdfTime.parse(currentTimeStr);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+        String earlistDateStr, earlistTimeStr;
+        Date earlistDate = null, earlistTime = null;
+        String reminderStartDateStr, reminderEndDateStr, reminderTimeStr;
+        Date reminderStartDate, reminderEndDate, reminderTime;
+        // 从当前日期开始
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(currentDate);
+        calendar.add(Calendar.DAY_OF_MONTH, 30);
+        Date endDate = calendar.getTime();
+        calendar.setTime(currentDate);
+        // 循环直到当前日期大于30天后
+        while (!calendar.getTime().after(endDate)) {
+            Date date = calendar.getTime();
+            for (int i = 0; i < reminderList.size(); i++) {
+                reminderStartDateStr = reminderList.get(i).getReminderStartDate();
+                reminderEndDateStr = reminderList.get(i).getReminderEndDate();
+                reminderTimeStr = reminderList.get(i).getReminderTime();
+                boolean isReminderActive = reminderList.get(i).getReminderActive();
+                try {
+                    reminderStartDate = sdfDate.parse(reminderStartDateStr);
+                } catch (ParseException e) {
+                    throw new RuntimeException(e);
+                }
+                try {
+                    reminderEndDate = sdfDate.parse(reminderEndDateStr);
+                } catch (ParseException e) {
+                    throw new RuntimeException(e);
+                }
+                try {
+                    reminderTime = sdfTime.parse(reminderTimeStr);
+                } catch (ParseException e) {
+                    throw new RuntimeException(e);
+                }
+                // 如果开启了reminder
+                if(isReminderActive) {
+                    // 如果日期在reminder期间
+                    if (!date.after(reminderEndDate) && !date.before(reminderStartDate)) {
+                        if (earlistDate == null || earlistTime == null) {
+                            earlistDate = date;
+                            earlistTime = reminderTime;
+                        } else if (earlistDate != null && earlistTime.after(reminderTime)) {
+                            earlistTime = reminderTime;
+                        }
+                    }
+                }
+            }
+            // 将当前日期增加一天
+            calendar.add(Calendar.DAY_OF_MONTH, 1);
+        }
+        if (earlistDate == null || earlistTime == null) return null;
+        earlistDateStr = sdfDate.format(earlistDate);
+        earlistTimeStr = sdfTime.format(earlistTime);
+        return earlistDateStr + " " + earlistTimeStr;
+    }
 }

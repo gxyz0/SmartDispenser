@@ -62,7 +62,7 @@
                 android:orientation="horizontal">
 
                 <TextView
-                    android:layout_width="140dp"
+                    android:layout_width="135dp"
                     android:layout_height="match_parent"
                     android:gravity="center_vertical"
                     android:text="Medication:"
@@ -93,7 +93,7 @@
                 android:orientation="horizontal">
 
                 <TextView
-                    android:layout_width="140dp"
+                    android:layout_width="135dp"
                     android:layout_height="match_parent"
                     android:gravity="center_vertical"
                     android:text="Start Date:"
@@ -120,7 +120,7 @@
                 android:orientation="horizontal">
 
                 <TextView
-                    android:layout_width="140dp"
+                    android:layout_width="135dp"
                     android:layout_height="match_parent"
                     android:gravity="center_vertical"
                     android:text="End Date:"

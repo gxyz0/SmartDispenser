@@ -1,24 +1,33 @@
 package com.example.smartdispenser.fragment;
 
+import static android.content.Context.MODE_PRIVATE;
+
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ExpandableListView;
 
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.dd.CircularProgressButton;
+import com.example.smartdispenser.PostRequest;
 import com.example.smartdispenser.R;
 import com.example.smartdispenser.adapter.BoxCardAdapter;
-import com.example.smartdispenser.room.DatabaseManager;
-import com.example.smartdispenser.room.medication.Medication;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+
+import com.example.smartdispenser.NetworkManager;
+import com.example.smartdispenser.adapter.DrawerExpandableListAdapter;
+import com.example.smartdispenser.database.DatabaseManager;
+import com.example.smartdispenser.database.Medication;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -54,74 +63,142 @@ public class BoxFragment extends Fragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        // 获取context
+        context = requireContext();
+        databaseManager = DatabaseManager.getInstance(context);
+
+        // 获取userId
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("userId", MODE_PRIVATE);
+        userId = sharedPreferences.getInt("userId", 1);
+
+        // 获取netWorkManger
+        netWorkManger = NetworkManager.getInstance(context);
+
         // 设置connectButton按钮监听器
         connectButton = view.findViewById(R.id.connect_button);
         connectButton.setOnClickListener(connectButtonListener);
-        // 获取Medication数据库内容
-        getMedicationList();
+        connectButton.post(new Runnable() {
+            @Override
+            public void run() {
+                connectButton.performClick();
+            }
+        });
+
         // 设置RecyclerView
-        RecyclerView boxCardLayout = view.findViewById(R.id.box_card_layout);
+        boxCardLayout = view.findViewById(R.id.box_card_layout);
         // 采用线性布局
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(requireContext());
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context);
         boxCardLayout.setLayoutManager(linearLayoutManager);
-        // 调用BoxCardAdapter
-        BoxCardAdapter boxCardAdapter = new BoxCardAdapter(requireContext(), medicationList);
-        boxCardLayout.setAdapter(boxCardAdapter);
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
+    public void onResume() {
+        super.onResume();
+        // 获取Medication数据库内容
+        getMedicationList();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (isTimerRunning) {
+            // 关闭设备查询服务
+            netWorkManger.stopDiscovery();
+            countDownTimer.cancel();
+        }
     }
 
     // 定义全局变量
     int userId = 1;
-    CircularProgressButton connectButton;
-    List<Medication> medicationList;
+    private Context context;
+    private DatabaseManager databaseManager;
+    private NetworkManager netWorkManger;
+//        private PostRequest postRequest = new PostRequest();
+    private CircularProgressButton connectButton;
+    private List<Medication> medicationList;
+    private RecyclerView boxCardLayout;
+    private BoxCardAdapter boxCardAdapter;
+    private CountDownTimer countDownTimer;
+    private boolean isTimerRunning;
 
     // 设置connectButton监听事件
     private final View.OnClickListener connectButtonListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            setConnectButton();
+            // 按钮初始状态 允许点击
+            if (connectButton.getProgress() == 0) {
+                // 设置connectButton状态
+                setConnectButton();
+            }
         }
     };
 
-    // 设置connectButton状态
+    // 设置connectButton样式 设置设备查询服务
     private void setConnectButton() {
+        // 启动设备查询服务
+        netWorkManger.URL = null;
+        netWorkManger.startDiscovery();
+        // 设置connectButton样式
         connectButton.setIndeterminateProgressMode(true);
         connectButton.setProgress(50);
-        new CountDownTimer(5000, 1000) {
+        isTimerRunning = true;
+        countDownTimer = new CountDownTimer(10000, 500) {
             @Override
             public void onTick(long l) {
+                if (netWorkManger.URL != null) {
+                    // 关闭设备查询服务
+                    netWorkManger.stopDiscovery();
+                    // 发送Post请求
+                    PostRequest.postUserId(userId, netWorkManger.URL + "/userId");
+//                    postRequest.postMedicationJson(postRequest.getUploadMedicationList(context, userId), netWorkManger.URL + "/medication");
+//                    postRequest.postReminderJson(postRequest.getUploadReminderList(context, userId), netWorkManger.URL + "/reminder");
+                    // 设置connectButton正确样式
+                    connectButton.setProgress(100);
+                    // 关闭计时器
+                    this.cancel();
+                }
             }
 
             public void onFinish() {
-                //connectButton.setProgress(100);
+                isTimerRunning = false;
+                // 关闭设备查询服务
+                netWorkManger.stopDiscovery();
+                // 设置connectButton错误样式
                 connectButton.setProgress(-1);
-            }
-        }.start();
-        new CountDownTimer(7000, 1000) {
-            @Override
-            public void onTick(long l) {
-            }
+                new CountDownTimer(2000, 1000) {
+                    @Override
+                    public void onTick(long l) {
+                    }
 
-            public void onFinish() {
-                connectButton.setProgress(0);
+                    public void onFinish() {
+                        connectButton.setProgress(0);
+                    }
+                }.start();
             }
         }.start();
     }
 
     // 获取Medication数据库内容
     private void getMedicationList() {
-        DatabaseManager databaseManager = new DatabaseManager(requireContext());
-        Future<List<Medication>> future = databaseManager.getMedicationsByUserId(userId);
-        try {
-            medicationList = future.get();
-        } catch (ExecutionException | InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        databaseManager.shutdown();
+        // 查询数据库
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                databaseManager.startConnection();
+                medicationList = databaseManager.getMedication(userId);
+                System.out.println("BoxFragment: Medication获取完成！");
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!medicationList.isEmpty()) {
+                            // 调用BoxCardAdapter
+                            BoxCardAdapter boxCardAdapter = new BoxCardAdapter(requireContext(), medicationList);
+                            boxCardLayout.setAdapter(boxCardAdapter);
+                        }
+                    }
+                });
+            }
+        }).start();
     }
 
 }

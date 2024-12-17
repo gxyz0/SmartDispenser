@@ -1,6 +1,10 @@
 package com.example.smartdispenser.fragment;
 
+import static android.content.Context.MODE_PRIVATE;
+
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,11 +14,13 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.smartdispenser.NetworkManager;
 import com.example.smartdispenser.R;
 import com.example.smartdispenser.activity.RemindCardActivity;
+import com.example.smartdispenser.adapter.BoxCardAdapter;
 import com.example.smartdispenser.adapter.RemindCardAdapter;
-import com.example.smartdispenser.room.DatabaseManager;
-import com.example.smartdispenser.room.reminder.Reminder;
+import com.example.smartdispenser.database.DatabaseManager;
+import com.example.smartdispenser.database.Reminder;
 import com.google.android.material.button.MaterialButton;
 
 import java.util.List;
@@ -79,29 +85,40 @@ public class RemindFragment extends Fragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-//        // 设置数据源
-//        data = new ArrayList<>(Arrays.asList("Remind1", "Remind2", "Remind3"));
-        // 获取Reminder数据库内容
-        getReminderList();
+        // 获取context
+        context = requireContext();
+        databaseManager = DatabaseManager.getInstance(context);
+
+        // 获取userId
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("userId", MODE_PRIVATE);
+        userId = sharedPreferences.getInt("userId", 1);
+
         // 设置增添按钮监听器
-        MaterialButton remindAddButton = view.findViewById(R.id.remind_add_button);
+        remindAddButton = view.findViewById(R.id.remind_add_button);
         remindAddButton.setOnClickListener(remindAddButtonListener);
+
         // 设置RecyclerView
         remindCardLayout = view.findViewById(R.id.remind_card_layout);
         // 采用线性布局
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(requireContext());
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context);
         remindCardLayout.setLayoutManager(linearLayoutManager);
-        // 调用BoxCardAdapter
-        remindCardAdapter = new RemindCardAdapter(reminderList, requireContext());
-        remindCardLayout.setAdapter(remindCardAdapter);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // 获取Reminder数据库内容
+        getReminderList();
     }
 
     // 定义全局变量
     int userId = 1;
-    List<Reminder> reminderList;
-    RecyclerView remindCardLayout;
-    RemindCardAdapter remindCardAdapter;
-    int remindCardNum;
+    private Context context;
+    private DatabaseManager databaseManager;
+    private MaterialButton remindAddButton;
+    private List<Reminder> reminderList;
+    private RecyclerView remindCardLayout;
+    private RemindCardAdapter remindCardAdapter;
 
     // 设置增添按钮监听事件
     private final View.OnClickListener remindAddButtonListener = new View.OnClickListener() {
@@ -113,34 +130,32 @@ public class RemindFragment extends Fragment {
 
     // 跳转到RemindCardActivity
     private void toRemindCardActivity() {
-        int newReminderId = reminderList.size()+1;
+        int newReminderId = reminderList.size() + 1;
         Intent intent = new Intent(requireContext(), RemindCardActivity.class);
         intent.putExtra("UserId", userId);
         intent.putExtra("ReminderId", newReminderId);
         requireContext().startActivity(intent);
     }
 
-    // 在对应的remindCardLayout中加载remindCard布局文件
-//    private void addCard() {
-//        remindCardId++;
-//        // 添加新数据到数据源
-//        data.add("Remind" + remindCardId);
-//        // 通知Adapter数据已更改
-//        remindCardNum = data.size();
-//        remindCardAdapter.notifyItemInserted(remindCardNum - 1);
-//        // 滚动到最底部
-//        remindCardLayout.getLayoutManager().scrollToPosition(remindCardNum - 1);
-//    }
-
     // 获取Reminder数据库内容
     private void getReminderList() {
-        DatabaseManager databaseManager = new DatabaseManager(requireContext());
-        Future<List<Reminder>> future = databaseManager.getRemindersByUserId(userId);
-        try {
-            reminderList = future.get();
-        } catch (ExecutionException | InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        databaseManager.shutdown();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                databaseManager.startConnection();
+                reminderList = databaseManager.getReminder(userId);
+                System.out.println("RemindFragment: Reminder获取完成！");
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!reminderList.isEmpty()) {
+                            // 调用RemindCardAdapter
+                            remindCardAdapter = new RemindCardAdapter(reminderList, context);
+                            remindCardLayout.setAdapter(remindCardAdapter);
+                        }
+                    }
+                });
+            }
+        }).start();
     }
 }

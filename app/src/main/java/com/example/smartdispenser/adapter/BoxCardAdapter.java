@@ -16,8 +16,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.smartdispenser.R;
 import com.example.smartdispenser.activity.BoxCardActivity;
-import com.example.smartdispenser.room.DatabaseManager;
-import com.example.smartdispenser.room.medication.Medication;
+import com.example.smartdispenser.activity.MainActivity;
+import com.example.smartdispenser.database.DatabaseManager;
+import com.example.smartdispenser.database.Medication;
 import com.google.android.material.button.MaterialButton;
 
 import java.util.List;
@@ -25,11 +26,13 @@ import java.util.List;
 public class BoxCardAdapter extends RecyclerView.Adapter<BoxCardAdapter.BoxCardViewHolder> {
     // 定义全局变量
     private Context context;
+    private DatabaseManager databaseManager;
     private List<Medication> medicationList;
     private int userId = 1;
 
     public BoxCardAdapter(Context context, List<Medication> medicationList) {
         this.context = context;
+        this.databaseManager = DatabaseManager.getInstance(context);
         this.medicationList = medicationList;
     }
 
@@ -45,7 +48,7 @@ public class BoxCardAdapter extends RecyclerView.Adapter<BoxCardAdapter.BoxCardV
     public void onBindViewHolder(@NonNull BoxCardViewHolder holder, int position) {
         // 绑定数据
         Medication medication = medicationList.get(position);
-        String text = medication.getMedicationId() + "\n" + medication.getMedicationName() + "\n" + medication.medicationQuantity + "\n" + medication.getMedicationNote();
+        String text = medication.getMedicationId() + "\n" + medication.getMedicationName() + "\n" + medication.getMedicationQuantity() + "\n" + medication.getMedicationNote();
         holder.contentText.setText(text);
         // 绑定tag标识
         ViewGroup parentView = (ViewGroup) holder.boxCardContent.getParent();
@@ -113,11 +116,17 @@ public class BoxCardAdapter extends RecyclerView.Adapter<BoxCardAdapter.BoxCardV
     private void deleteContent(ViewGroup parentView) {
         // 更新数据库内容
         int medicationId = ((int) parentView.getTag()) + 1;
-        Medication medication = medicationList.get(medicationId-1);
-        medication.setMedication(null, 0, null);
-        DatabaseManager databaseManager = new DatabaseManager(context);
-        databaseManager.updateMedications(medication);
-        databaseManager.shutdown();
+        Medication medication = medicationList.get(medicationId - 1);
+        medication.setMedication(null, 0, null, null);
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                databaseManager.startConnection();
+                databaseManager.updateMedication(medication);
+                System.out.println("Medication更新成功！");
+            }
+        }).start();
         // 删除布局文件
         View boxCardContent = parentView.findViewById(R.id.box_card_content);
         if (boxCardContent != null) parentView.removeView(boxCardContent);
@@ -129,28 +138,13 @@ public class BoxCardAdapter extends RecyclerView.Adapter<BoxCardAdapter.BoxCardV
     }
 
     // 跳转到BoxCardActivity
-    private void toBoxCardActivity(ViewGroup parentView){
+    private void toBoxCardActivity(ViewGroup parentView) {
         int medicationId = ((int) parentView.getTag()) + 1;
         Intent intent = new Intent(context, BoxCardActivity.class);
-        intent.putExtra("UserId", userId);
+//        intent.putExtra("UserId", userId);
         intent.putExtra("MedicationId", medicationId);
         context.startActivity(intent);
     }
-
-    // 在对应的boxCard中加载boxCardContent布局文件
-//    private void loadContent(ViewGroup view) {
-//        // 加载布局文件
-//        View boxCardContent = LayoutInflater.from(context).inflate(R.layout.box_card_content, view, false);
-//        // 设置id
-//        boxCardContent.setId(R.id.box_card_content);
-//        // 添加到父布局中的首位
-//        view.addView(boxCardContent, 0);
-//        // 设置删除按钮状态
-//        MaterialButton boxDeleteButton = view.findViewById(R.id.box_delete_button);
-//        boxDeleteButton.setIcon(null);
-//        boxDeleteButton.setText(context.getString(R.string.delete));
-//        boxDeleteButton.setEnabled(true);
-//    }
 
     // 设置删除提示
     private void deleteAlert(ViewGroup parentView) {

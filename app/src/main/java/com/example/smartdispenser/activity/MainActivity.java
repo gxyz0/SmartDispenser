@@ -1,9 +1,12 @@
 package com.example.smartdispenser.activity;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ExpandableListView;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
@@ -17,15 +20,15 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.smartdispenser.R;
+import com.example.smartdispenser.adapter.BoxCardAdapter;
 import com.example.smartdispenser.adapter.DrawerExpandableListAdapter;
 import com.example.smartdispenser.adapter.FragmentPagerAdapter;
+import com.example.smartdispenser.database.DatabaseManager;
+import com.example.smartdispenser.database.UserInfo;
 import com.example.smartdispenser.fragment.BoxFragment;
 import com.example.smartdispenser.fragment.HomeFragment;
 import com.example.smartdispenser.fragment.RemindFragment;
 import com.example.smartdispenser.fragment.SettingFragment;
-import com.example.smartdispenser.room.DatabaseManager;
-import com.example.smartdispenser.room.medication.Medication;
-import com.example.smartdispenser.room.reminder.Reminder;
 import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
@@ -38,16 +41,19 @@ import nl.joery.animatedbottombar.AnimatedBottomBar;
 public class MainActivity extends AppCompatActivity {
     // 定义userId
     int userId = 1;
+    // 定义context
+    Context context = this;
+    DatabaseManager databaseManager = DatabaseManager.getInstance(this);
     // 定义ViewPager切换页面
-    ViewPager2 viewPager;
+    private ViewPager2 viewPager;
     // 定义Fragment页面
-    HomeFragment homeFragment = new HomeFragment();
-    BoxFragment boxFragment = new BoxFragment();
-    RemindFragment remindFragment = new RemindFragment();
-    SettingFragment settingFragment = new SettingFragment();
+    private HomeFragment homeFragment = new HomeFragment();
+    private BoxFragment boxFragment = new BoxFragment();
+    private RemindFragment remindFragment = new RemindFragment();
+    private SettingFragment settingFragment = new SettingFragment();
     // 定义抽屉式侧边栏的内容
-    List<String> groups = new ArrayList<>();
-    List<List<String>> children = new ArrayList<>();
+    private List<String> groups = new ArrayList<>();
+    private List<List<String>> children = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,8 +74,9 @@ public class MainActivity extends AppCompatActivity {
         int pageIndex = intent.getIntExtra("Page", 0);
         switchFragment(pageIndex);
 
-        // 数据库初始化
-        setDatabase();
+        // 获取userId
+        SharedPreferences sharedPreferences = this.getSharedPreferences("userId", MODE_PRIVATE);
+        userId = sharedPreferences.getInt("userId", 1);
 
         // 设置抽屉式侧边栏监听器
         DrawerLayoutListener();
@@ -79,6 +86,8 @@ public class MainActivity extends AppCompatActivity {
 
         // 设置抽屉式侧边栏的内容
         setDrawerList();
+        // 设置抽屉式侧边栏 修改 退出 按钮监听器
+        DrawerButtonListener();
     }
 
     // 设置抽屉式侧边栏监听器
@@ -175,61 +184,71 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void setDatabase() {
-        DatabaseManager databaseManager = new DatabaseManager(this);
-        // 初始化medicationList
-        Future<List<Medication>> medicationFuture = databaseManager.getMedicationsByUserId(userId);
-        try {
-            List<Medication> medicationList = medicationFuture.get();
-            if (medicationList.isEmpty()) {
-                Medication medication1 = new Medication(1, userId, "阿司匹林", 11, "早晚，1次2片");
-                Medication medication2 = new Medication(2, userId, "布洛芬", 11, "早中晚，1次1片");
-                Medication medication3 = new Medication(3, userId, "维他命", 11, "早，1次3片");
-                databaseManager.insertMedications(medication1, medication2, medication3);
-            }
-        } catch (ExecutionException | InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        // 初始化reminderList
-        Future<List<Reminder>> reminderFuture = databaseManager.getRemindersByUserId(userId);
-        try {
-            List<Reminder> reminderList = reminderFuture.get();
-            if (reminderList.isEmpty()) {
-                Reminder reminder1 = new Reminder(1, userId, "Reminder1", "阿司匹林", 1, "20:00", "2024-10-10", "2024-10-11", 1);
-                databaseManager.insertReminders(reminder1);
-            }
-        } catch (ExecutionException | InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        databaseManager.shutdown();
-    }
-
     private void setDrawerList() {
-        groups.add("User Name");
-        groups.add("User Age/Birth");
-        groups.add("Health Condition");
-        groups.add("Medicine Taking");
+        ImageView userImage = findViewById(R.id.user_image);
+        TextView useNickname = findViewById(R.id.user_nickname);
+        groups.add("User Phone");
+        groups.add("User Email");
+        groups.add("User Gender");
+        groups.add("User Birthday");
+        groups.add("Health Status");
         List<String> childrenlist1 = new ArrayList<>();
-        childrenlist1.add("AAA·AAA");
         List<String> childrenlist2 = new ArrayList<>();
-        childrenlist2.add("60/1980.12.31");
         List<String> childrenlist3 = new ArrayList<>();
-        childrenlist3.add("11111111");
-        childrenlist3.add("22222222");
-        childrenlist3.add("33333333");
         List<String> childrenlist4 = new ArrayList<>();
-        childrenlist4.add("11111111");
-        childrenlist4.add("22222222");
-        childrenlist4.add("33333333");
-        children.add(childrenlist1);
-        children.add(childrenlist2);
-        children.add(childrenlist3);
-        children.add(childrenlist4);
-        // 设置抽屉式侧边栏的adapter
-        DrawerExpandableListAdapter adapter = new DrawerExpandableListAdapter(groups, children);
-        ExpandableListView drawerList = findViewById(R.id.drawer_list);
-        drawerList.setAdapter(adapter);
+        List<String> childrenlist5 = new ArrayList<>();
+        // 获取数据库userInfo数据
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                databaseManager.startConnection();
+                UserInfo userInfo = databaseManager.getUserInfo(userId);
+                System.out.println("MainActivity: UserInfo获取完成！");
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // 设置userInfo
+                        childrenlist1.add(userInfo.getUserPhone() + "");
+                        childrenlist2.add(userInfo.getUserEmail() + "");
+                        childrenlist3.add(userInfo.getUserGender() + "");
+                        childrenlist4.add(userInfo.getUserBirthday() + "");
+                        childrenlist5.add(userInfo.getUserHealthStatus() + "");
+                        children.add(childrenlist1);
+                        children.add(childrenlist2);
+                        children.add(childrenlist3);
+                        children.add(childrenlist4);
+                        children.add(childrenlist5);
+                        // 设置用户名
+                        useNickname.setText(userInfo.getUserNickname());
+                        // 设置抽屉式侧边栏的adapter
+                        DrawerExpandableListAdapter adapter = new DrawerExpandableListAdapter(groups, children);
+                        ExpandableListView drawerList = findViewById(R.id.drawer_list);
+                        drawerList.setAdapter(adapter);
+                    }
+                });
+            }
+        }).start();
     }
 
+    private void DrawerButtonListener() {
+        MaterialButton userNicknameButton = findViewById(R.id.user_nickname_button);
+        MaterialButton exit = findViewById(R.id.exit);
+        userNicknameButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // 跳转到InfoCollectionActivity
+                Intent intent = new Intent(context, InfoCollectionActivity.class);
+                context.startActivity(intent);
+            }
+        });
+        exit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // 跳转到LoginActivity
+                Intent intent = new Intent(context, LoginActivity.class);
+                context.startActivity(intent);
+            }
+        });
+    }
 
 }

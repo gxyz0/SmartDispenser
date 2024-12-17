@@ -5,11 +5,27 @@ import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
 import android.util.Log;
 
+import java.net.InetAddress;
+
 public class NetworkManager {
     private NsdManager mNsdManager;
     private NsdManager.DiscoveryListener mDiscoveryListener;
+    private NsdManager.ResolveListener mResolveListener;
 
-    public NetworkManager(Context context) {
+    private String IP = null;
+    private int PORT = 0;
+    public String URL = null;
+
+    // 单例模式 返回NetworkManager
+    private static NetworkManager INSTANCE;
+    public static synchronized NetworkManager getInstance(Context context) {
+        if (INSTANCE == null) {
+            INSTANCE = new NetworkManager(context);
+        }
+        return INSTANCE;
+    }
+
+    private NetworkManager(Context context) {
         mNsdManager = (NsdManager) context.getSystemService(Context.NSD_SERVICE);
         mDiscoveryListener = new NsdManager.DiscoveryListener() {
             @Override
@@ -34,18 +50,10 @@ public class NetworkManager {
 
             @Override
             public void onServiceFound(NsdServiceInfo serviceInfo) {
-                Log.d("NSD", "Service found success" + serviceInfo);
-                if (!serviceInfo.getServiceType().equals(NsdManager.PROTOCOL_DNS_SD)) {
-                    return;
-                }
                 // 服务发现成功
-                if (serviceInfo.getServiceName().contains("ESP32")) { // 假设你的ESP32服务名称包含"ESP32"
-                    // 获取IP地址和端口号
-                    String ipAddress = serviceInfo.getHost().getHostAddress();
-                    int port = serviceInfo.getPort();
-                    // 构建连接URL
-                    String ESP32Url = "http://" + ipAddress + ":" + port;
-                }
+                Log.d("NSD", "Service found success" + serviceInfo);
+                // 解析域名
+                resolveService(serviceInfo);
             }
 
             @Override
@@ -55,8 +63,37 @@ public class NetworkManager {
         };
     }
 
-    public void discoverServices() {
-        mNsdManager.discoverServices(null, NsdManager.PROTOCOL_DNS_SD, mDiscoveryListener);
+    private void resolveService(NsdServiceInfo serviceInfo) {
+        mResolveListener = new NsdManager.ResolveListener() {
+            @Override
+            public void onResolveFailed(NsdServiceInfo serviceInfo, int errorCode) {
+                Log.e("NSD", "Resolve failed: Error code:" + errorCode);
+            }
+
+            @Override
+            public void onServiceResolved(NsdServiceInfo resolvedServiceInfo) {
+                Log.d("NSD", "Service resolved. " + resolvedServiceInfo);
+                try {
+                    InetAddress host = resolvedServiceInfo.getHost();
+                    if (host != null) {
+                        // 获取IP地址 端口号 URL
+                        IP = host.getHostAddress();
+                        PORT = resolvedServiceInfo.getPort();
+                        URL = "http://" + IP + ":" + PORT;
+                        Log.d("ESP32Url", URL);
+                    } else {
+                        Log.e("NSD", "Host is null for resolved service: " + resolvedServiceInfo);
+                    }
+                } catch (Exception e) {
+                    Log.e("NSD", "Exception: " + e.getMessage());
+                }
+            }
+        };
+        mNsdManager.resolveService(serviceInfo, mResolveListener);
+    }
+
+    public void startDiscovery() {
+        mNsdManager.discoverServices("_http._tcp.", NsdManager.PROTOCOL_DNS_SD, mDiscoveryListener);
     }
 
     public void stopDiscovery() {

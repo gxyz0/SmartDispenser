@@ -26,13 +26,14 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <ImageView
+            android:id="@+id/user_image"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:src="@drawable/user"
-            app:layout_constraintBottom_toTopOf="@id/user_name" />
+            app:layout_constraintBottom_toTopOf="@id/user_nickname" />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/user_name_button"
+            android:id="@+id/user_nickname_button"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_marginLeft="3dp"
@@ -42,12 +43,12 @@
             app:icon="@drawable/edit"
             app:iconGravity="end"
             app:iconTint="@color/black"
-            app:layout_constraintBottom_toBottomOf="@id/user_name"
-            app:layout_constraintTop_toTopOf="@id/user_name"
+            app:layout_constraintBottom_toBottomOf="@id/user_nickname"
+            app:layout_constraintTop_toTopOf="@id/user_nickname"
             app:rippleColor="@color/theme_background" />
 
         <TextView
-            android:id="@+id/user_name"
+            android:id="@+id/user_nickname"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="45dp"

@@ -5,6 +5,7 @@ import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.View;
@@ -20,9 +21,11 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.smartdispenser.R;
-import com.example.smartdispenser.room.DatabaseManager;
-import com.example.smartdispenser.room.medication.Medication;
-import com.example.smartdispenser.room.reminder.Reminder;
+import com.example.smartdispenser.adapter.BoxCardAdapter;
+import com.example.smartdispenser.database.DatabaseManager;
+import com.example.smartdispenser.database.Medication;
+import com.example.smartdispenser.database.Reminder;
+import com.example.smartdispenser.database.UserInfo;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -35,27 +38,33 @@ import java.util.concurrent.Future;
 
 public class RemindCardActivity extends AppCompatActivity {
     // 定义context
-    Context context = this;
+    private Context context = this;
+    // 定义databaseManager
+    private DatabaseManager databaseManager = DatabaseManager.getInstance(context);
     // 定义userId和reminderId
-    int userId = 1;
-    int reminderId = 1;
+    private int userId = 1;
+    private int reminderId = 1;
+    int medicationId = 1;
     // 定义reminderList和reminder
-    List<Reminder> reminderList;
-    Reminder reminder;
+    private List<Reminder> reminderList;
+    private List<Medication> medicationList;
+    private Reminder reminder;
     // 定义日期选择按钮id
-    int dateButtonId = 0;
+    private int dateButtonId = 0;
     // 定义提醒名称 药物服用数
-    TextInputLayout reminderName;
-    TextInputLayout medicationTakingNum;
-    TextInputEditText nameInput;
-    TextInputEditText takingNumInput;
+    private TextInputLayout reminderName;
+    private TextInputLayout medicationTakingNum;
+    private TextInputEditText nameInput;
+    private TextInputEditText takingNumInput;
+    // 定义确定按钮
+    private MaterialButton remindConfirmButton;
     // 定义药物选择按钮
-    MaterialButton remindMedicationButton;
+    private MaterialButton remindMedicationButton;
     // 定义日期选择按钮
-    MaterialButton remindStartDateButton;
-    MaterialButton remindEndDateButton;
+    private MaterialButton remindStartDateButton;
+    private MaterialButton remindEndDateButton;
     // 定义时间选择按钮
-    MaterialButton remindTimeButton;
+    private MaterialButton remindTimeButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,25 +79,33 @@ public class RemindCardActivity extends AppCompatActivity {
             return insets;
         });
 
+        // 获取userId
+        SharedPreferences sharedPreferences = this.getSharedPreferences("userId", MODE_PRIVATE);
+        userId = sharedPreferences.getInt("userId", 1);
+
         // 设置titleButton的样式和点击事件
         setTitleBar();
 
         // 设置remindConfirmButton的监听器
-        MaterialButton remindConfirmButton = findViewById(R.id.remind_confirm_button);
+        remindConfirmButton = findViewById(R.id.remind_confirm_button);
         remindConfirmButton.setOnClickListener(remindConfirmButtonListener);
 
-        // 设置textInput的样式和内容
-        setTextInput();
-
         // 设置remindMedicationButton的监听器
+        remindMedicationButton = findViewById(R.id.remind_medication_button);
         remindMedicationButton.setOnClickListener(remindMedicationButtonListener);
 
         // 设置remindStartDateButton，remindEndDateButton的监听器
+        remindStartDateButton = findViewById(R.id.remind_start_date_button);
+        remindEndDateButton = findViewById(R.id.remind_end_date_button);
         remindStartDateButton.setOnClickListener(remindDateButtonListener);
         remindEndDateButton.setOnClickListener(remindDateButtonListener);
 
         // 设置remindTimeButton的监听器
+        remindTimeButton = findViewById(R.id.remind_time_button);
         remindTimeButton.setOnClickListener(remindTimeButtonListener);
+
+        // 获取reminderList
+        getReminderList();
     }
 
     // 设置titleBar的样式和titleButton的点击事件
@@ -110,6 +127,28 @@ public class RemindCardActivity extends AppCompatActivity {
         });
     }
 
+    private void getReminderList() {
+        Intent intent = getIntent();
+//        userId = intent.getIntExtra("UserId", 1);
+        reminderId = intent.getIntExtra("ReminderId", 1);
+        // 查询数据库
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                databaseManager.startConnection();
+                medicationList = databaseManager.getMedication(userId);
+                reminderList = databaseManager.getReminder(userId);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // 设置textInput的样式和内容
+                        setTextInput();
+                    }
+                });
+            }
+        }).start();
+    }
+
     // 设置remindConfirmButton的监听事件
     private final View.OnClickListener remindConfirmButtonListener = new View.OnClickListener() {
         @Override
@@ -124,38 +163,24 @@ public class RemindCardActivity extends AppCompatActivity {
         medicationTakingNum = findViewById(R.id.medication_taking_num);
         nameInput = reminderName.findViewById(R.id.text_input);
         takingNumInput = medicationTakingNum.findViewById(R.id.text_input);
-        remindMedicationButton = findViewById(R.id.remind_medication_button);
-        remindStartDateButton = findViewById(R.id.remind_start_date_button);
-        remindEndDateButton = findViewById(R.id.remind_end_date_button);
-        remindTimeButton = findViewById(R.id.remind_time_button);
         // 设置hint
         reminderName.setHint("Reminder Name");
         medicationTakingNum.setHint("Number of Medications Taken");
         // 设置takingNumInput格式
         setTakingNumInput();
-        // 获取ReminderList
-        Intent intent = getIntent();
-        userId = intent.getIntExtra("UserId", 1);
-        reminderId = intent.getIntExtra("ReminderId", 1);
-        DatabaseManager databaseManager = new DatabaseManager(context);
-        Future<List<Reminder>> future = databaseManager.getRemindersByUserId(userId);
-        try {
-            reminderList = future.get();
-        } catch (ExecutionException | InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        databaseManager.shutdown();
         // 设置内容
         // 如果数量小于reminderId，说明是插入
         if (reminderList.size() < reminderId) {
             nameInput.setText("Reminder" + reminderId);
-            reminder = new Reminder(reminderId, userId, "Reminder" + reminderId, null, 0, null, null, null, 1);
+            reminder = new Reminder(0, reminderId, userId, "Reminder" + reminderId, 0, 0, null, null, null, true);
         }
-        // 如果数量大于reminderId，说明是修改
+        // 如果数量大于等于reminderId，说明是修改
         else {
             reminder = reminderList.get(reminderId - 1);
             nameInput.setText(reminder.getReminderName());
-            remindMedicationButton.setText(reminder.getMedicationName());
+            medicationId = reminder.getMedicationId();
+            String medicationName = medicationList.get(medicationId - 1).getMedicationName();
+            remindMedicationButton.setText(medicationName);
             takingNumInput.setText(reminder.getMedicationTakingNum() + "");
             remindStartDateButton.setText(reminder.getReminderStartDate());
             remindEndDateButton.setText(reminder.getReminderEndDate());
@@ -194,6 +219,32 @@ public class RemindCardActivity extends AppCompatActivity {
             showMedicationAlert();
         }
     };
+
+    // 设置药物选择提示
+    private void showMedicationAlert() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("Choose Medication Name/选择药物名称"); // 设置对话框标题
+        // 获取medication
+        String medication1 = String.valueOf(medicationList.get(0).getMedicationName());
+        String medication2 = String.valueOf(medicationList.get(1).getMedicationName());
+        String medication3 = String.valueOf(medicationList.get(2).getMedicationName());
+        // 设置列表项
+        String[] items = {medication1, medication2, medication3};
+        builder.setItems(items, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                // 用户选择的列表项的处理逻辑
+                medicationId = which + 1;
+                String selectedItem = items[which];
+                // 根据用户选择更新UI
+                remindMedicationButton.setText(selectedItem);
+                dialog.dismiss(); // 关闭对话框
+            }
+        });
+        // 创建并显示AlertDialog
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
 
     // 设置DatePickerDialog的监听器
     DatePickerDialog.OnDateSetListener datePickerListener = new DatePickerDialog.OnDateSetListener() {
@@ -254,65 +305,44 @@ public class RemindCardActivity extends AppCompatActivity {
         }
     };
 
-    // 设置药物选择提示
-    private void showMedicationAlert() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setTitle("Choose Medication Name/选择药物名称"); // 设置对话框标题
-        // 读取数据库
-        List<Medication> medicationList;
-        DatabaseManager databaseManager = new DatabaseManager(context);
-        Future<List<Medication>> future = databaseManager.getMedicationsByUserId(userId);
-        try {
-            medicationList = future.get();
-        } catch (ExecutionException | InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        databaseManager.shutdown();
-        String medication1 = String.valueOf(medicationList.get(0).getMedicationName());
-        String medication2 = String.valueOf(medicationList.get(1).getMedicationName());
-        String medication3 = String.valueOf(medicationList.get(2).getMedicationName());
-        // 设置列表项
-        String[] items = {medication1, medication2, medication3};
-        builder.setItems(items, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                // 用户选择的列表项的处理逻辑
-                String selectedItem = items[which];
-                // 根据用户选择更新UI
-                remindMedicationButton.setText(selectedItem);
-                dialog.dismiss(); // 关闭对话框
-            }
-        });
-        // 创建并显示AlertDialog
-        AlertDialog dialog = builder.create();
-        dialog.show();
-    }
-
     // 更新Reminder数据库
     private void saveReminder() {
         // 获取textInput的内容
         String reminderName = String.valueOf(nameInput.getText());
-        String medicationName = String.valueOf(remindMedicationButton.getText());
         int medicationTakingNum = Integer.valueOf(String.valueOf(takingNumInput.getText()));
         String reminderStartDate = String.valueOf(remindStartDateButton.getText());
         String reminderEndDate = String.valueOf(remindEndDateButton.getText());
         String reminderTime = String.valueOf(remindTimeButton.getText());
+        //比较StartDate和EndDate大小
+
+
         // 更新Reminder数据库内容
-        DatabaseManager databaseManager = new DatabaseManager(context);
-        reminder.setReminder(reminderName, medicationName, medicationTakingNum, reminderTime, reminderStartDate, reminderEndDate);
-        // 如果数量小于reminderId，说明是插入
-        if (reminderList.size() < reminderId) {
-            databaseManager.insertReminders(reminder);
-        }
-        // 如果数量大于reminderId，说明是修改
-        else {
-            databaseManager.updateReminders(reminder);
-        }
-        databaseManager.shutdown();
-        // 跳转到MainActivity
-        Intent intent = new Intent(context, MainActivity.class);
-        intent.putExtra("Page", 2); // 传递页面序号
-        context.startActivity(intent);
+        reminder.setReminder(reminderName, medicationId, medicationTakingNum, reminderStartDate, reminderEndDate, reminderTime);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                databaseManager.startConnection();
+                // 如果数量小于reminderId，说明是插入
+                if (reminderList.size() < reminderId) {
+                    databaseManager.insertReminder(reminder);
+                    System.out.println("Reminder插入完成！");
+                }
+                // 如果数量大于等于reminderId，说明是修改
+                else {
+                    databaseManager.updateReminder(reminder);
+                    System.out.println("Reminder更新完成！");
+                }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // 跳转到MainActivity
+                        Intent intent = new Intent(context, MainActivity.class);
+                        intent.putExtra("Page", 2); // 传递页面序号
+                        context.startActivity(intent);
+                    }
+                });
+            }
+        }).start();
     }
 
     // 设置保存提示

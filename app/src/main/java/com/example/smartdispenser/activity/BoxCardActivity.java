@@ -3,10 +3,12 @@ package com.example.smartdispenser.activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AlertDialog;
@@ -16,8 +18,9 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.smartdispenser.R;
-import com.example.smartdispenser.room.DatabaseManager;
-import com.example.smartdispenser.room.medication.Medication;
+import com.example.smartdispenser.adapter.BoxCardAdapter;
+import com.example.smartdispenser.database.DatabaseManager;
+import com.example.smartdispenser.database.Medication;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -28,19 +31,22 @@ import java.util.concurrent.Future;
 
 public class BoxCardActivity extends AppCompatActivity {
     // 定义context
-    Context context = this;
-    // 定义userId
-    int userId = 1;
+    private Context context = this;
+    // 定义databaseManager
+    private DatabaseManager databaseManager = DatabaseManager.getInstance(context);
+    // 定义userId和medicationId
+    private int userId = 1;
+    private int medicationId = 1;
     // 定义medicationList和medication
-    List<Medication> medicationList;
-    Medication medication;
+    private List<Medication> medicationList;
+    private Medication medication;
     // 定义boxCardContent
-    TextInputLayout medicationName;
-    TextInputLayout medicationQuantity;
-    TextInputLayout medicationNote;
-    TextInputEditText nameInput;
-    TextInputEditText quantityInput;
-    TextInputEditText noteInput;
+    private TextInputLayout medicationName;
+    private TextInputLayout medicationQuantity;
+    private TextInputLayout medicationNote;
+    private TextInputEditText nameInput;
+    private TextInputEditText quantityInput;
+    private TextInputEditText noteInput;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +61,10 @@ public class BoxCardActivity extends AppCompatActivity {
             return insets;
         });
 
+        // 获取userId
+        SharedPreferences sharedPreferences = this.getSharedPreferences("userId", MODE_PRIVATE);
+        userId = sharedPreferences.getInt("userId", 1);
+
         // 设置titleBar的样式和titleButton的点击事件
         setTitleBar();
 
@@ -62,8 +72,8 @@ public class BoxCardActivity extends AppCompatActivity {
         MaterialButton boxConfirmButton = findViewById(R.id.box_confirm_button);
         boxConfirmButton.setOnClickListener(boxConfirmButtonListener);
 
-        // 设置textInput的样式和内容
-        setTextInput();
+        // 获取medicationList
+        getMedicationList();
     }
 
     // 设置titleBar的样式和titleButton的点击事件
@@ -83,6 +93,28 @@ public class BoxCardActivity extends AppCompatActivity {
                 context.startActivity(intent);
             }
         });
+    }
+
+    private void getMedicationList() {
+        Intent intent = getIntent();
+//        userId = intent.getIntExtra("UserId", 1);
+        medicationId = intent.getIntExtra("MedicationId", 1);
+        // 查询数据库
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                databaseManager.startConnection();
+                medicationList = databaseManager.getMedication(userId);
+                System.out.println("Medication获取完成！");
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // 设置textInput的样式和内容
+                        setTextInput();
+                    }
+                });
+            }
+        }).start();
     }
 
     // 设置boxConfirmButton的监听事件
@@ -107,18 +139,6 @@ public class BoxCardActivity extends AppCompatActivity {
         medicationNote.setHint("Medication Note");
         // 设置quantityInput格式
         setQuantityInput();
-        // 获取medicationList
-        Intent intent = getIntent();
-        userId = intent.getIntExtra("UserId", 1);
-        int medicationId = intent.getIntExtra("MedicationId", 1);
-        DatabaseManager databaseManager = new DatabaseManager(context);
-        Future<List<Medication>> future = databaseManager.getMedicationsByUserId(userId);
-        try {
-            medicationList = future.get();
-        } catch (ExecutionException | InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        databaseManager.shutdown();
         // 设置内容
         medication = medicationList.get(medicationId - 1);
         nameInput.setText(medication.getMedicationName());
@@ -157,14 +177,23 @@ public class BoxCardActivity extends AppCompatActivity {
         int medicationQuantity = Integer.valueOf(String.valueOf(quantityInput.getText()));
         String medicationNote = String.valueOf(noteInput.getText());
         // 更新Medication数据库内容
-        DatabaseManager databaseManager = new DatabaseManager(context);
-        medication.setMedication(medicationName, medicationQuantity, medicationNote);
-        databaseManager.updateMedications(medication);
-        databaseManager.shutdown();
-        // 跳转到MainActivity
-        Intent intent = new Intent(context, MainActivity.class);
-        intent.putExtra("Page", 1); // 传递页面序号
-        context.startActivity(intent);
+        medication.setMedication(medicationName, medicationQuantity, medicationNote, null);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                databaseManager.startConnection();
+                databaseManager.updateMedication(medication);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // 跳转到MainActivity
+                        Intent intent = new Intent(context, MainActivity.class);
+                        intent.putExtra("Page", 1); // 传递页面序号
+                        context.startActivity(intent);
+                    }
+                });
+            }
+        }).start();
     }
 
     // 设置保存提示
