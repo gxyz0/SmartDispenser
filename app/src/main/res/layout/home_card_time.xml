@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="50dp"
+    android:layout_marginLeft="15dp"
+    android:layout_marginRight="15dp"
+    android:layout_marginBottom="2dp"
+    app:cardBackgroundColor="@color/theme"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="5dp"
+    app:contentPaddingLeft="15dp"
+    app:contentPaddingRight="5dp">
+
+    <TextView
+        android:id="@+id/home_card_time_text"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:gravity="center_vertical"
+        android:text="2025-12-00-12:00"
+        android:textColor="@color/theme_text_white"
+        android:textSize="24sp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/home_card_time_button"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="end"
+        android:backgroundTint="@color/theme_text_white"
+        app:icon="@drawable/wrong"
+        app:iconGravity="textStart"
+        app:iconPadding="0dp"
+        app:iconSize="24dp"
+        app:iconTint="@color/theme_text_black" />
+
+
+</androidx.cardview.widget.CardView>

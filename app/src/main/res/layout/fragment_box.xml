@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/theme_background"
+    android:fillViewport="true"
+    android:scrollbars="vertical"
+    tools:context=".fragment.BoxFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/box_title"
+            layout="@layout/box_title" />
+
+        <!--跳转smart页面按钮-->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/to_smart_button"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:layout_marginBottom="20dp"
+            android:backgroundTint="@color/theme"
+            android:text="click to get AI doctor's advice"
+            android:textColor="@color/theme_text_white"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:strokeColor="@color/theme_dark"
+            app:strokeWidth="5dp" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/box_card_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

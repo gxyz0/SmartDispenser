@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/theme_background"
+    android:gravity="center_horizontal"
+    tools:context=".fragment.RemindFragment">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/remind_card_layout"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/add_button_shell"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/add_button_shell"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingLeft="30dp"
+        android:paddingTop="10dp"
+        android:paddingRight="30dp"
+        android:paddingBottom="10dp"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/remind_add_button"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:backgroundTint="@color/theme"
+            android:text="@string/add"
+            android:textColor="@color/theme_text_white"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            app:strokeColor="@color/theme_dark"
+            app:strokeWidth="5dp" />
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

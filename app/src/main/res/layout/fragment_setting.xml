@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/theme_background"
+    android:fillViewport="true"
+    android:scrollbars="vertical"
+    tools:context=".fragment.SettingFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="15dp"
+            app:cardBackgroundColor="@color/theme"
+            app:cardCornerRadius="30dp"
+            app:cardElevation="15dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="30dp"
+                android:layout_marginTop="15dp"
+                android:layout_marginRight="30dp"
+                android:layout_marginBottom="15dp"
+                android:orientation="vertical">
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/nightSwitch"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:checked="false"
+                    android:gravity="center_vertical"
+                    android:text="Night Theme"
+                    android:textColor="@color/theme_text_white"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    app:thumbTint="@color/thumb_color"
+                    app:trackTint="@color/track_color" />
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/disturbSwitch"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:checked="false"
+                    android:gravity="center_vertical"
+                    android:text="Not Disturb"
+                    android:textColor="@color/theme_text_white"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    app:thumbTint="@color/thumb_color"
+                    app:trackTint="@color/track_color" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/startTimeButton"
+                        android:layout_weight="0.5"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:backgroundTint="@color/theme"
+                        android:text="Start"
+                        android:textColor="@color/theme_text_white"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        app:cornerRadius="15dp"
+                        app:strokeColor="@color/theme_text_white"
+                        app:strokeWidth="3dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginRight="5dp"
+                        android:text="~"
+                        android:textColor="@color/theme_text_white"/>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/endTimeButton"
+                        android:layout_weight="0.5"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:backgroundTint="@color/theme"
+                        android:text="End"
+                        android:textColor="@color/theme_text_white"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        app:cornerRadius="15dp"
+                        app:strokeColor="@color/theme_text_white"
+                        app:strokeWidth="3dp" />
+                </LinearLayout>
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

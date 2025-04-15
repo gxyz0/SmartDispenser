@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--基础色-->
+    <color name="transparent">#00FFFFFF</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="red">#FFEE0000</color>
+    <color name="grey">#FF808080</color>
+    <color name="light_red">#FF4545</color>
+    <color name="light_grey">#FFD0D0D0</color>
+    <color name="white_transparent">#1AFFFFFF</color>
+
+    <!--主题色-->
+    <color name="theme">#426624</color>
+    <color name="theme_dark">#294512</color>
+    <color name="theme_light">#6A9447</color>
+    <color name="theme_grey">#FF828E77</color>
+    <color name="theme_background">#A7B1A7</color>
+    <color name="theme_background_light">#BEC1BE</color>
+    <color name="theme_transparent">#1A87CE4A</color>
+
+    <color name="theme_text_black">#272826</color>
+    <color name="theme_text_white">#E6E1E5</color>
+
+    <color name="bottom_bar_bg">#3A5D20</color>
+    <color name="bottom_bar_select">#93CA66</color>
+</resources>

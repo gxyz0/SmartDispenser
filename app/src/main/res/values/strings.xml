@@ -1,0 +1,43 @@
+<resources>
+    <string name="app_name">DoseWise</string>
+
+    <!--BottomBar的tab名称-->
+    <string name="home">Home</string>
+    <string name="box">Box</string>
+    <string name="remind">Remind</string>
+    <string name="setting">Setting</string>
+
+    <!--Fragment的名称-->
+    <string name="home_fragment">HomeFragment</string>
+    <string name="box_fragment">BoxFragment</string>
+    <string name="remind_fragment">RemindFragment</string>
+    <string name="setting_fragment">SettingFragment</string>
+
+    <!--boxCard，remindCard按钮名称-->
+    <string name="delete">delete</string>
+    <string name="edit">edit</string>
+    <string name="add">add</string>
+    <!--boxActivity，remindActivity按钮名称-->
+    <string name="confirm">confirm</string>
+    <string name="back">Back</string>
+    <string name="exit">exit</string>
+
+    <!--login和register中的显示名称-->
+    <string name="login">login</string>
+    <string name="register">register</string>
+    <string name="username">usename</string>
+    <string name="password">password</string>
+    <string name="remember_me">remember_me</string>
+    <string name="forgot_password">forgot_password</string>
+    <string name="_6_digit_password">6_digit_password</string>
+    <string name="confirm_your_password">comfirm your password</string>
+    <string name="health_status_prompt">Health status</string>
+    <string name="medication_image">medication photo</string>
+    <string name="add_medication_image">add medication image</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="first_fragment_label">First Fragment</string>
+    <string name="second_fragment_label">Second Fragment</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+
+</resources>

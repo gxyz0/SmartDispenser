@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="exit_dimen">15dp</dimen>
+    <dimen name="image_dimen_350dp">350dp</dimen>
+    <dimen name="image_dimen_210dp">210dp</dimen>
+    <dimen name="image_corner_8dp">8dp</dimen>
+    <dimen name="image_corner_5dp">5dp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
+</resources>

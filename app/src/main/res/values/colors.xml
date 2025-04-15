@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--基础色-->
+    <color name="transparent">#00FFFFFF</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="red">#FFEE0000</color>
+    <color name="grey">#FF808080</color>
+    <color name="light_red">#FF4545</color>
+    <color name="light_grey">#FFD0D0D0</color>
+    <color name="white_transparent">#1AFFFFFF</color>
+
+    <!--主题色-->
+    <color name="theme">#FF87CE4A</color>
+    <color name="theme_dark">#FF79AD6E</color>
+    <color name="theme_light">#FFD0FFA9</color>
+    <color name="theme_grey">#FF828E77</color>
+    <color name="theme_background">#FFF0FFF0</color>
+    <color name="theme_background_light">#FFF9FFF9</color>
+    <color name="theme_transparent">#1A87CE4A</color>
+
+    <color name="theme_text_black">#484B44</color>
+    <color name="theme_text_white">#FFFFFF</color>
+
+    <color name="medication_card_color">#E0EFD3</color>
+    <color name="bottom_bar_bg">#FFFFFFFF</color>
+    <color name="bottom_bar_select">#FF79AD6E</color>
+</resources>

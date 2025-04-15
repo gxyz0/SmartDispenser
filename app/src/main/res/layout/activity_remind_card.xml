@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/theme_background"
+    tools:context=".activity.RemindCardActivity">
+
+    <include
+        android:id="@+id/title_bar"
+        layout="@layout/title_bar" />
+
+    <LinearLayout
+        android:id="@+id/remind_confirm_button_shell"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingLeft="30dp"
+        android:paddingRight="30dp"
+        android:paddingBottom="15dp"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/remind_confirm_button"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginStart="5dp"
+            android:backgroundTint="@color/theme"
+            android:text="@string/confirm"
+            android:textColor="@color/theme_text_white"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            app:strokeColor="@color/theme_dark"
+            app:strokeWidth="5dp" />
+    </LinearLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        android:scrollbars="vertical"
+        app:layout_constraintBottom_toTopOf="@+id/remind_confirm_button_shell"
+        app:layout_constraintTop_toBottomOf="@+id/title_bar">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="15dp"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <include
+                android:id="@+id/reminder_name"
+                layout="@layout/input_item" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_margin="5dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="135dp"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:text="Medication:"
+                    android:textColor="@color/theme_text_black"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/remind_medication_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:backgroundTint="@color/theme"
+                    android:text="click me"
+                    android:textColor="@color/theme_text_white"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="15dp"
+                    app:strokeColor="@color/theme_dark"
+                    app:strokeWidth="5dp" />
+            </LinearLayout>
+
+            <include
+                android:id="@+id/medication_taking_num"
+                layout="@layout/input_item" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_margin="5dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="135dp"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:text="Start Date:"
+                    android:textColor="@color/theme_text_black"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/remind_start_date_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    android:backgroundTint="@color/theme"
+                    android:text="click me"
+                    android:textColor="@color/theme_text_white"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="15dp"
+                    app:strokeColor="@color/theme_dark"
+                    app:strokeWidth="5dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_margin="5dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="135dp"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:text="End Date:"
+                    android:textColor="@color/theme_text_black"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/remind_end_date_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    android:backgroundTint="@color/theme"
+                    android:text="click me"
+                    android:textColor="@color/theme_text_white"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="15dp"
+                    app:strokeColor="@color/theme_dark"
+                    app:strokeWidth="5dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_margin="5dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="190dp"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:text="Reminder Time:"
+                    android:textColor="@color/theme_text_black"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/remind_time_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    android:backgroundTint="@color/theme"
+                    android:text="click me"
+                    android:textColor="@color/theme_text_white"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="15dp"
+                    app:strokeColor="@color/theme_dark"
+                    app:strokeWidth="5dp" />
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>

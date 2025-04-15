@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="20dp"
+    app:cardBackgroundColor="@color/theme"
+    app:cardCornerRadius="30dp"
+    app:cardElevation="15dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="15dp">
+
+        <ImageView
+            android:id="@+id/box_title_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
+            android:adjustViewBounds="true"
+            android:scaleType="fitXY"
+            android:src="@drawable/dispenser" />
+
+        <com.dd.CircularProgressButton
+            android:id="@+id/connect_button"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:gravity="center"
+            android:textColor="@color/red"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            app:cpb_colorIndicator="@color/white"
+            app:cpb_colorIndicatorBackground="@color/theme_dark"
+            app:cpb_colorProgress="@color/theme_light"
+            app:cpb_cornerRadius="50dp"
+            app:cpb_iconComplete="@drawable/right"
+            app:cpb_iconError="@drawable/wrong"
+            app:cpb_selectorComplete="@color/theme_background"
+            app:cpb_selectorError="@color/light_red"
+            app:cpb_selectorIdle="@color/theme_background"
+            app:cpb_textIdle="Click To Connect !" />
+    </LinearLayout>
+</androidx.cardview.widget.CardView>
