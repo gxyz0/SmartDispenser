@@ -28,7 +28,7 @@
             android:layout_marginRight="20dp"
             android:layout_marginBottom="20dp"
             android:backgroundTint="@color/theme"
-            android:text="click to get AI doctor's advice"
+            android:text="click to get AI's help!"
             android:textColor="@color/theme_text_white"
             android:textSize="20sp"
             android:textStyle="bold"

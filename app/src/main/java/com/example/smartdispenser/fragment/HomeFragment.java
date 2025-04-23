@@ -175,6 +175,10 @@ public class HomeFragment extends Fragment {
                 databaseManager.startConnection();
                 reminderList = databaseManager.getReminder(userId);
                 System.out.println("HomeFragment: Reminder获取完成！");
+                // 发送消息到Handler
+                Message msg = new Message();
+                msg.what = 1; // 设置消息类型
+                handler.sendMessage(msg);
 //                getActivity().runOnUiThread(new Runnable() {
 //                    @Override
 //                    public void run() {

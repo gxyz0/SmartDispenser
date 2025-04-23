@@ -93,10 +93,10 @@ public class NetworkManager {
     }
 
     public void startDiscovery() {
-//        mNsdManager.discoverServices("_http._tcp.", NsdManager.PROTOCOL_DNS_SD, mDiscoveryListener);
+        mNsdManager.discoverServices("_http._tcp.", NsdManager.PROTOCOL_DNS_SD, mDiscoveryListener);
     }
 
     public void stopDiscovery() {
-//        mNsdManager.stopServiceDiscovery(mDiscoveryListener);
+        mNsdManager.stopServiceDiscovery(mDiscoveryListener);
     }
 }

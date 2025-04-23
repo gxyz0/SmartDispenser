@@ -52,6 +52,9 @@ dependencies {
     implementation("com.google.code.gson:gson:2.8.6")
     // 引入okHTTP
     implementation("com.squareup.okhttp3:okhttp:4.9.0")
+    // 引入WebSocket
+    // implementation("org.java-websocket:Java-WebSocket:1.5.3")
+
     // 引入animated-bottom-bar
     implementation("nl.joery.animatedbottombar:library:1.1.0")
     // 引入circular-progress-button

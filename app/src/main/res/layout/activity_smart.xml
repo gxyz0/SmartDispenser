@@ -45,6 +45,36 @@
                 app:strokeColor="@color/theme_dark"
                 app:strokeWidth="5dp" />
 
+            <ImageView
+                android:id="@+id/prescription_image"
+                android:layout_width="match_parent"
+                android:layout_height="150dp"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:scaleType="centerCrop"
+                android:src="@drawable/add_prescription" />
+
+            <include
+                android:id="@+id/prescription_input"
+                layout="@layout/input_multiline" />
+
+            <!--识别处方按钮-->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/smart_identify_button"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_marginBottom="15dp"
+                android:backgroundTint="@color/theme"
+                android:text="try to dentify prescription"
+                android:textColor="@color/theme_text_white"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                app:strokeColor="@color/theme_dark"
+                app:strokeWidth="5dp" />
+
             <include
                 android:id="@+id/suggestion_input"
                 layout="@layout/input_multiline" />
@@ -61,8 +91,6 @@
                 android:textStyle="bold"
                 app:strokeColor="@color/theme_dark"
                 app:strokeWidth="5dp" />
-
-
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>
